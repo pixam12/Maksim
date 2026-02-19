@@ -12,38 +12,47 @@ const { analyzeProfitability, calculateMedian, filterUnprofitable, calculateTota
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+console.log(`[Startup] Serwer startuje na porcie: ${PORT}`);
+console.log(`[Startup] Katalog roboczy: ${process.cwd()}`);
+console.log(`[Startup] __dirname: ${__dirname}`);
+
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// 1. Health & Debug (Must be before static)
-app.get('/health', (req, res) => res.status(200).send('OK - Server is UP'));
-app.get('/debug', (req, res) => {
-    try {
-        const structure = {
-            time: new Date().toISOString(),
-            __dirname,
-            files: fs.readdirSync(__dirname),
-            publicExists: fs.existsSync(path.join(__dirname, 'public')),
-            publicFiles: fs.existsSync(path.join(__dirname, 'public')) ? fs.readdirSync(path.join(__dirname, 'public')) : []
-        };
-        res.json(structure);
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
+// Routes
+app.get('/health', (req, res) => {
+    console.log('[Health] Request odebrany');
+    res.send('OK - Server is UP');
 });
 
-// 2. Main Page
+app.get('/debug', (req, res) => {
+    console.log('[Debug] Request odebrany');
+    const structure = {
+        cwd: process.cwd(),
+        dirname: __dirname,
+        publicExists: fs.existsSync(path.join(__dirname, 'public')),
+        files: fs.readdirSync(__dirname),
+        env: {
+            PORT: process.env.PORT,
+            VINTED_DOMAIN: process.env.VINTED_DOMAIN,
+            HAS_COOKIE: !!process.env.VINTED_COOKIE
+        }
+    };
+    res.json(structure);
+});
+
 app.get('/', (req, res) => {
+    console.log('[Root] Request odebrany');
     const indexPath = path.join(__dirname, 'public', 'index.html');
     if (fs.existsSync(indexPath)) {
         res.sendFile(indexPath);
     } else {
-        res.status(404).send('404 - index.html not found in public folder');
+        console.error(`[Root] ❌ Nie znaleziono index.html w: ${indexPath}`);
+        res.status(404).send(`<h1>Błąd 404</h1><p>Nie znaleziono pliku index.html. Skontaktuj się z administratorem.</p><p>Ścieżka: ${indexPath}</p>`);
     }
 });
 
-// 3. Static Files
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ========== STATE ==========
@@ -930,10 +939,8 @@ app.get('*', (req, res) => {
 });
 
 // ========== START SERVER ==========
-const HOST = '0.0.0.0';
-app.listen(PORT, HOST, () => {
-    console.log(`\n🔎 Vinted Profitability Analyzer`);
-    console.log(`📊 Serwer dostępny lokalnie: http://localhost:${PORT}`);
-    console.log(`📱 Serwer dostępny w sieci (dla telefonu): http://192.168.0.131:${PORT}`);
-    console.log(`\n⚙️  Skonfiguruj cookie sesji Vinted w ustawieniach\n`);
+app.listen(PORT, () => {
+    console.log(`\n🔎 Vinted Profitability Analyzer - ACTIVE`);
+    console.log(`📊 Port: ${PORT}`);
+    console.log(`⚙️  Katalog: ${__dirname}\n`);
 });
