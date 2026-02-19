@@ -4,6 +4,7 @@
     "description": "Vinted Profitability Analyzer - analiza opłacalności ofert",
     "main": "server.js",
     "scripts": {
+        "prestart": "ls -R",
         "start": "node server.js",
         "dev": "node server.js"
     },
