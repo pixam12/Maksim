@@ -12,44 +12,35 @@ const { analyzeProfitability, calculateMedian, filterUnprofitable, calculateTota
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-console.log(`[Startup] Serwer startuje na porcie: ${PORT}`);
-console.log(`[Startup] Katalog roboczy: ${process.cwd()}`);
-console.log(`[Startup] __dirname: ${__dirname}`);
-
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.get('/health', (req, res) => {
-    console.log('[Health] Request odebrany');
-    res.send('OK - Server is UP');
-});
+// --- DEBUG LOGS FOR RENDER ---
+console.log(`[System] CWD: ${process.cwd()}`);
+console.log(`[System] __dirname: ${__dirname}`);
+try {
+    const files = fs.readdirSync(__dirname);
+    console.log(`[System] Files in root: ${files.join(', ')}`);
+    if (files.includes('public')) {
+        const publicFiles = fs.readdirSync(path.join(__dirname, 'public'));
+        console.log(`[System] Files in public: ${publicFiles.join(', ')}`);
+    } else {
+        console.error('[System] ❌ FOLDER "public" NIE ISTNIEJE!');
+    }
+} catch (e) {
+    console.error(`[System] Błąd listowania plików: ${e.message}`);
+}
 
-app.get('/debug', (req, res) => {
-    console.log('[Debug] Request odebrany');
-    const structure = {
-        cwd: process.cwd(),
-        dirname: __dirname,
-        publicExists: fs.existsSync(path.join(__dirname, 'public')),
-        files: fs.readdirSync(__dirname),
-        env: {
-            PORT: process.env.PORT,
-            VINTED_DOMAIN: process.env.VINTED_DOMAIN,
-            HAS_COOKIE: !!process.env.VINTED_COOKIE
-        }
-    };
-    res.json(structure);
-});
+// Routes
+app.get('/health', (req, res) => res.send('OK'));
 
 app.get('/', (req, res) => {
-    console.log('[Root] Request odebrany');
     const indexPath = path.join(__dirname, 'public', 'index.html');
     if (fs.existsSync(indexPath)) {
         res.sendFile(indexPath);
     } else {
-        console.error(`[Root] ❌ Nie znaleziono index.html w: ${indexPath}`);
-        res.status(404).send(`<h1>Błąd 404</h1><p>Nie znaleziono pliku index.html. Skontaktuj się z administratorem.</p><p>Ścieżka: ${indexPath}</p>`);
+        res.status(404).send(`Error 404: Brak pliku index.html w folderze public. Pliki: ${fs.readdirSync(path.join(__dirname, 'public')).join(', ')}`);
     }
 });
 
