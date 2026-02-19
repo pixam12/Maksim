@@ -44,14 +44,23 @@ app.get('/health', (req, res) => res.send('OK'));
 
 app.get('/', (req, res) => {
     const indexPath = path.join(__dirname, 'public', 'index.html');
-    if (fs.existsSync(indexPath)) {
-        res.sendFile(indexPath);
-    } else {
-        res.status(404).send(`Error 404: Brak pliku index.html w folderze public. Pliki: ${fs.readdirSync(path.join(__dirname, 'public')).join(', ')}`);
-    }
+    console.log(`[Server] Próba wysłania: ${indexPath}`);
+    res.sendFile(indexPath, (err) => {
+        if (err) {
+            console.error('[Server] Błąd SendFile:', err);
+            if (!res.headersSent) {
+                res.status(500).send(`Internal Server Error: ${err.message}`);
+            }
+        }
+    });
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Catch-all
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // ========== STATE ==========
 let vintedCookie = '';
