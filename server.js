@@ -12,9 +12,16 @@ const { analyzeProfitability, calculateMedian, filterUnprofitable, calculateTota
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// GLOBAL REQUEST LOGGER
+app.use((req, res, next) => {
+    console.log(`[Incoming] ${req.method} ${req.url} - ${new Date().toISOString()}`);
+    next();
+});
+
 app.use(cors());
 app.use(express.json());
+
+app.get('/test', (req, res) => res.send('Test 123 - Server is responding!'));
 
 // --- DEBUG LOGS FOR RENDER ---
 console.log(`[System] CWD: ${process.cwd()}`);
@@ -930,7 +937,7 @@ app.get('*', (req, res) => {
 });
 
 // ========== START SERVER ==========
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n🔎 Vinted Profitability Analyzer - ACTIVE`);
     console.log(`📊 Port: ${PORT}`);
     console.log(`⚙️  Katalog: ${__dirname}\n`);
