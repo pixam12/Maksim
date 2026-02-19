@@ -894,6 +894,11 @@ app.post('/api/favorites/cleanup', async (req, res) => {
     });
 });
 
+// Catch-all route to serve the frontend (must be last)
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // ========== START SERVER ==========
 const HOST = '0.0.0.0';
 app.listen(PORT, HOST, () => {
