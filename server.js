@@ -17,7 +17,14 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    const indexPath = path.join(__dirname, 'public', 'index.html');
+    console.log(`[Server] Request na / - szukam pliku: ${indexPath}`);
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        console.error(`[Server] ❌ BŁĄD: Nie znaleziono pliku index.html w ${indexPath}`);
+        res.status(404).send(`Not Found - index.html missing at ${indexPath}. Debug: Files in public: ${fs.readdirSync(path.join(__dirname, 'public')).join(', ')}`);
+    }
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
