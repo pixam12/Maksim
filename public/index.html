@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Vinted Analyzer - Analiza opłacalności ofert na Vinted. Dodawaj do ulubionych, monitoruj i usuwaj nieopłacalne.">
+    <title>Vinted Analyzer | Opłacalność Ofert</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo">
+                <span class="logo-icon">💎</span>
+                <h1>Vinted <span class="accent">Analyzer</span></h1>
+            </div>
+            <div class="header-actions">
+                <button id="btnSettings" class="btn btn-ghost" title="Ustawienia">
+                    <span>⚙️</span> Ustawienia
+                </button>
+                <div id="statusDot" class="status-dot disconnected" title="Nie połączono"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- TABS -->
+    <nav class="tabs">
+        <button class="tab active" data-tab="search">
+            <span>🔍</span> Wyszukiwanie
+        </button>
+        <button class="tab" data-tab="favorites">
+            <span>❤️</span> Ulubione <span id="favCount" class="badge">0</span>
+        </button>
+    </nav>
+
+    <!-- SEARCH TAB -->
+    <main id="searchTab" class="tab-content active">
+        <!-- UNIFIED SMART SEARCH -->
+        <section class="search-section">
+            <div class="ai-box unified-search-box">
+                <div class="ai-box-header">
+                    <span>✨ Inteligentne Wyszukiwanie</span>
+                    <small>Wpisz co chcesz znaleźć lub co Cię interesuje (np. "tanie buty nike do 200zl")</small>
+                </div>
+                <div class="search-bar unified-bar">
+                    <input type="text" id="searchInput"
+                        placeholder="Czego szukasz? (np. Nike Air Max, Levi's do 100zł...)" autocomplete="off">
+                    <button id="btnToggleFilters" class="btn btn-ghost" title="Filtry">
+                        <span>🔧</span> Filtruj
+                    </button>
+                    <button id="btnSearch" class="btn btn-ai">
+                        <span>✨</span> Szukaj
+                    </button>
+                </div>
+                <div id="aiInterpretation" class="ai-interpretation" style="display:none"></div>
+            </div>
+
+            <!-- Filters (Hidden by default) -->
+            <div id="filterSection" class="filters secondary-filters">
+
+                <div class="filters-grid">
+                    <!-- Brand -->
+                    <div class="filter-group full-width">
+                        <label>Marka</label>
+                        <input type="text" id="filterBrand" placeholder="np. Nike, Zara, Adidas..."
+                            class="modern-input">
+                    </div>
+
+                    <!-- Price -->
+                    <div class="filter-group">
+                        <label>Cena (od - do)</label>
+                        <div class="price-inputs">
+                            <input type="number" id="priceFrom" placeholder="Od" min="0" class="modern-input">
+                            <span class="separator">-</span>
+                            <input type="number" id="priceTo" placeholder="Do" min="0" class="modern-input">
+                        </div>
+                    </div>
+
+                    <!-- Sort -->
+                    <div class="filter-group">
+                        <label>Sortowanie</label>
+                        <select id="sortOrder" class="modern-select">
+                            <option value="relevance">Trafność</option>
+                            <option value="price_low_to_high">Cena: rosnąco</option>
+                            <option value="price_high_to_low">Cena: malejąco</option>
+                            <option value="newest_first">Najnowsze</option>
+                        </select>
+                    </div>
+
+                    <!-- Gender (Multi-select Chips) -->
+                    <div class="filter-group full-width">
+                        <label>Płeć</label>
+                        <div class="chips-container" id="genderChips">
+                            <button class="filter-chip" data-value="1904">Kobiety</button>
+                            <button class="filter-chip" data-value="5">Mężczyźni</button>
+                            <button class="filter-chip" data-value="1195">Dzieci</button>
+                        </div>
+                    </div>
+
+                    <!-- Category (Multi-select Chips) -->
+                    <div class="filter-group full-width">
+                        <label>Kategoria (Szybki wybór)</label>
+                        <div class="chips-container" id="categoryChips">
+                            <button class="filter-chip" data-value="1207">Koszulki / T-shirty</button>
+                            <button class="filter-chip" data-value="1209">Bluzy</button>
+                            <button class="filter-chip" data-value="1206">Kurtki i płaszcze</button>
+                            <button class="filter-chip" data-value="1213">Spodnie</button>
+                            <button class="filter-chip" data-value="1231">Buty</button>
+                            <button class="filter-chip" data-value="1247">Akcesoria</button>
+                        </div>
+                    </div>
+
+                    <!-- Size (Multi-select Chips) -->
+                    <div class="filter-group full-width">
+                        <label>Rozmiar</label>
+                        <div class="chips-container" id="sizeChips">
+                            <button class="filter-chip" data-value="xs">XS</button>
+                            <button class="filter-chip" data-value="s">S</button>
+                            <button class="filter-chip" data-value="m">M</button>
+                            <button class="filter-chip" data-value="l">L</button>
+                            <button class="filter-chip" data-value="xl">XL</button>
+                            <button class="filter-chip" data-value="xxl">XXL</button>
+                        </div>
+                        <div class="chips-container mt-2" id="shoeSizeChips">
+                            <button class="filter-chip" data-value="36">36</button>
+                            <button class="filter-chip" data-value="37">37</button>
+                            <button class="filter-chip" data-value="38">38</button>
+                            <button class="filter-chip" data-value="39">39</button>
+                            <button class="filter-chip" data-value="40">40</button>
+                            <button class="filter-chip" data-value="41">41</button>
+                            <button class="filter-chip" data-value="42">42</button>
+                            <button class="filter-chip" data-value="43">43</button>
+                            <button class="filter-chip" data-value="44">44</button>
+                            <button class="filter-chip" data-value="45">45</button>
+                        </div>
+                    </div>
+
+                    <!-- Condition (Multi-select Chips) -->
+                    <div class="filter-group full-width">
+                        <label>Stan</label>
+                        <div class="chips-container" id="conditionChips">
+                            <button class="filter-chip" data-value="6">Nowy z metką / Nowy</button>
+                            <button class="filter-chip" data-value="1">Bardzo dobry</button>
+                            <button class="filter-chip" data-value="2">Dobry</button>
+                            <button class="filter-chip" data-value="3">Zadowalający</button>
+                        </div>
+                    </div>
+
+                    <!-- Material (Multi-select Chips) -->
+                    <div class="filter-group full-width">
+                        <label>Materiał</label>
+                        <div class="chips-container" id="materialChips">
+                            <button class="filter-chip" data-value="1">Bawełna</button>
+                            <button class="filter-chip" data-value="2">Skóra</button>
+                            <button class="filter-chip" data-value="3">Jedwab</button>
+                            <button class="filter-chip" data-value="4">Wełna</button>
+                            <button class="filter-chip" data-value="5">Jeans</button>
+                            <button class="filter-chip" data-value="6">Len</button>
+                            <button class="filter-chip" data-value="12">Zamsz</button>
+                            <button class="filter-chip" data-value="19">Kaszmir</button>
+                        </div>
+                        <input type="text" id="filterMaterialInput" placeholder="Inny materiał..."
+                            class="modern-input mt-2" style="margin-top:8px">
+                    </div>
+                </div>
+
+                <div class="filters-actions">
+                    <button id="btnApplyFilters" class="btn btn-primary btn-full">Zastosuj filtry</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results -->
+        <section class="results-section">
+            <div id="searchStats" class="stats-bar" style="display:none">
+                <span id="resultCount">0 wyników</span>
+                <span id="medianInfo">Mediana: —</span>
+            </div>
+            <div id="searchResults" class="items-grid">
+                <!-- Items will be rendered here -->
+            </div>
+            <div id="loadMoreSection" class="load-more-section" style="display:none">
+                <button id="btnLoadMore" class="btn btn-ghost btn-full">
+                    <span>➕</span> Załaduj więcej ofert
+                </button>
+            </div>
+            <div id="searchLoading" class="loading-container" style="display:none">
+                <div class="spinner"></div>
+                <p>Przeszukuję Vinted...</p>
+            </div>
+            <div id="searchEmpty" class="empty-state">
+                <div class="empty-icon">🔍</div>
+                <h3>Wyszukaj oferty</h3>
+                <p>Wpisz nazwę produktu, marki lub kategorii i sprawdź opłacalność</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- FAVORITES TAB -->
+    <main id="favoritesTab" class="tab-content">
+        <section class="favorites-header">
+            <div class="favorites-controls">
+                <div class="threshold-control">
+                    <label>Próg opłacalności: <strong id="thresholdValue">5</strong>/10</label>
+                    <input type="range" id="thresholdSlider" min="1" max="10" value="5" step="1">
+                </div>
+                <div class="favorites-actions">
+                    <button id="btnRefreshFavs" class="btn btn-ghost">
+                        <span>🔄</span> Odśwież
+                    </button>
+                    <button id="btnCleanup" class="btn btn-danger">
+                        <span>🗑️</span> Wyczyść nieopłacalne
+                    </button>
+                </div>
+            </div>
+            <div id="favStats" class="stats-bar" style="display:none">
+                <span id="favTotal">0 ulubionych</span>
+                <span id="favProfitable" class="stat-good">🟢 0 opłacalnych</span>
+                <span id="favUnprofitable" class="stat-bad">🔴 0 nieopłacalnych</span>
+            </div>
+        </section>
+
+        <section class="results-section">
+            <div id="favResults" class="items-grid"></div>
+            <div id="favLoading" class="loading-container" style="display:none">
+                <div class="spinner"></div>
+                <p>Ładuję ulubione...</p>
+            </div>
+            <div id="favEmpty" class="empty-state">
+                <div class="empty-icon">❤️</div>
+                <h3>Brak ulubionych</h3>
+                <p>Dodaj oferty do ulubionych z zakładki wyszukiwania</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settingsModal" class="modal-overlay" style="display:none">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>⚙️ Ustawienia</h2>
+                <button class="modal-close" onclick="closeModal('settingsModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label for="vintedDomain">Domena Vinted</label>
+                    <select id="vintedDomain">
+                        <option value="www.vinted.pl">🇵🇱 Vinted.pl (Polska)</option>
+                        <option value="www.vinted.fr">🇫🇷 Vinted.fr (Francja)</option>
+                        <option value="www.vinted.de">🇩🇪 Vinted.de (Niemcy)</option>
+                        <option value="www.vinted.es">🇪🇸 Vinted.es (Hiszpania)</option>
+                        <option value="www.vinted.it">🇮🇹 Vinted.it (Włochy)</option>
+                        <option value="www.vinted.nl">🇳🇱 Vinted.nl (Holandia)</option>
+                        <option value="www.vinted.lt">🇱🇹 Vinted.lt (Litwa)</option>
+                        <option value="www.vinted.co.uk">🇬🇧 Vinted.co.uk (UK)</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label for="cookieInput">Cookie sesji Vinted</label>
+                    <textarea id="cookieInput" rows="4" placeholder="Wklej tutaj cookie z przeglądarki..."></textarea>
+                    <div class="cookie-help">
+                        <details>
+                            <summary>📖 Jak uzyskać cookie? (Opera GX)</summary>
+                            <ol>
+                                <li>Zaloguj się na <strong>vinted.pl</strong> w Opera GX</li>
+                                <li>Naciśnij <strong>Ctrl + Shift + I</strong> (otwiera DevTools)<br>
+                                    <small style="color:var(--text-muted)">Alternatywnie: kliknij menu ≡ → Deweloper →
+                                        Narzędzia deweloperskie</small>
+                                </li>
+                                <li>Kliknij zakładkę <strong>Network</strong> (Sieć) u góry DevTools</li>
+                                <li>Odśwież stronę Vinted (<strong>Ctrl + R</strong>)</li>
+                                <li>Kliknij dowolny request (np. pierwszy z listy) do <code>vinted.pl</code></li>
+                                <li>Po prawej znajdź sekcję <strong>Request Headers</strong></li>
+                                <li>Znajdź pole <strong>Cookie</strong> i skopiuj <strong>całą jego zawartość</strong>
+                                </li>
+                                <li>Wklej tutaj i kliknij "Zapisz"</li>
+                            </ol>
+                        </details>
+                    </div>
+                </div>
+                <button id="btnSaveConfig" class="btn btn-primary btn-full">
+                    <span>💾</span> Zapisz konfigurację
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ANALYSIS MODAL -->
+    <div id="analysisModal" class="modal-overlay" style="display:none">
+        <div class="modal modal-large">
+            <div class="modal-header">
+                <h2>📊 Analiza opłacalności</h2>
+                <button class="modal-close" onclick="closeModal('analysisModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="analysisContent">
+                <div class="spinner"></div>
+                <p>Analizuję ofertę...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CLEANUP CONFIRMATION MODAL -->
+    <div id="cleanupModal" class="modal-overlay" style="display:none">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>🗑️ Potwierdzenie</h2>
+                <button class="modal-close" onclick="closeModal('cleanupModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="cleanupContent">
+                <!-- Dynamically filled -->
+            </div>
+        </div>
+    </div>
+
+    <!-- TOASTS -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
