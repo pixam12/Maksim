@@ -1,0 +1,8 @@
+node_modules/
+.git
+.gitignore
+GITHUB_SETUP.bat
+DEPLOY_GUIDE.md
+config.json
+.vscode/
+npm-debug.log

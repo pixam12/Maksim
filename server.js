@@ -13,6 +13,18 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.get('/health', (req, res) => res.status(200).send('OK'));
+app.get('/debug', (req, res) => {
+    try {
+        const structure = {
+            __dirname,
+            files: fs.readdirSync(__dirname),
+            publicFiles: fs.existsSync(path.join(__dirname, 'public')) ? fs.readdirSync(path.join(__dirname, 'public')) : 'missing'
+        };
+        res.json(structure);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
 app.use(cors());
 app.use(express.json());
 
