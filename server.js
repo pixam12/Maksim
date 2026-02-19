@@ -12,33 +12,38 @@ const { analyzeProfitability, calculateMedian, filterUnprofitable, calculateTota
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.get('/health', (req, res) => res.status(200).send('OK'));
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// 1. Health & Debug (Must be before static)
+app.get('/health', (req, res) => res.status(200).send('OK - Server is UP'));
 app.get('/debug', (req, res) => {
     try {
         const structure = {
+            time: new Date().toISOString(),
             __dirname,
             files: fs.readdirSync(__dirname),
-            publicFiles: fs.existsSync(path.join(__dirname, 'public')) ? fs.readdirSync(path.join(__dirname, 'public')) : 'missing'
+            publicExists: fs.existsSync(path.join(__dirname, 'public')),
+            publicFiles: fs.existsSync(path.join(__dirname, 'public')) ? fs.readdirSync(path.join(__dirname, 'public')) : []
         };
         res.json(structure);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
-app.use(cors());
-app.use(express.json());
 
+// 2. Main Page
 app.get('/', (req, res) => {
     const indexPath = path.join(__dirname, 'public', 'index.html');
-    console.log(`[Server] Request na / - szukam pliku: ${indexPath}`);
     if (fs.existsSync(indexPath)) {
         res.sendFile(indexPath);
     } else {
-        console.error(`[Server] ❌ BŁĄD: Nie znaleziono pliku index.html w ${indexPath}`);
-        res.status(404).send(`Not Found - index.html missing at ${indexPath}. Debug: Files in public: ${fs.readdirSync(path.join(__dirname, 'public')).join(', ')}`);
+        res.status(404).send('404 - index.html not found in public folder');
     }
 });
 
+// 3. Static Files
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ========== STATE ==========
