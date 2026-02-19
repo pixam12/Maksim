@@ -40,26 +40,14 @@ try {
 }
 
 // Routes
-app.get('/health', (req, res) => res.send('OK'));
+app.get('/health', (req, res) => res.status(200).send('OK'));
 
-app.get('/', (req, res) => {
-    const indexPath = path.join(__dirname, 'public', 'index.html');
-    console.log(`[Server] Próba wysłania: ${indexPath}`);
-    res.sendFile(indexPath, (err) => {
-        if (err) {
-            console.error('[Server] Błąd SendFile:', err);
-            if (!res.headersSent) {
-                res.status(500).send(`Internal Server Error: ${err.message}`);
-            }
-        }
-    });
-});
-
+// Statyczne pliki (css, js, obrazy)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Catch-all
+// Zawsze serwuj index.html dla strony głównej i nieznanych tras (SPA)
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.resolve(__dirname, 'public', 'index.html'));
 });
 
 // ========== STATE ==========
